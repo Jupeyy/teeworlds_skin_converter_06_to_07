@@ -290,7 +290,7 @@ void CreateJSONSub(const char* pSkinName07, const char* pBodyPart, FILE* pFile, 
 	fwrite(pText, 1, strlen(pText), pFile);
 	pText = "\",\n";
 	fwrite(pText, 1, strlen(pText), pFile);
-	pText = "\t\t\"custom_colors\": \"true\",\n";
+	pText = "\t\t\"custom_colors\": \"false\",\n";
 	fwrite(pText, 1, strlen(pText), pFile);
 	pText = "\t\t\"hue\": 255,\n";
 	fwrite(pText, 1, strlen(pText), pFile);
