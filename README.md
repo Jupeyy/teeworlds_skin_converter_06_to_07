@@ -2,7 +2,7 @@
 Convert skins from 0.6 to 0.7
 
 usage:
-(for windows ./Converter.exe)
-./Converter <directory>
+(for windows ./Converter.exe)<br>
+'./Converter \<directory\>'
 
 the 0.7 skins will be in output
