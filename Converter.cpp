@@ -187,11 +187,15 @@ void CConverter::ConvertReal() {
 	m_pBodyBuffer = new uint8_t[m_BodyWidth * m_BodyHeight * m_BytesPerPixel];
 	mem_zero(m_pBodyBuffer, m_BodyWidth * m_BodyHeight * m_BytesPerPixel);
 	
-	uint8_t* pBodyBuffer = new uint8_t[128 * 128 * m_BytesPerPixel];
+	uint32_t SizeBody = 128 - 2;
+	uint32_t BodyOffsetX = 1;
+	uint32_t BodyOffsetY = 2;
+	uint32_t BodyCutY = 4;
+	uint8_t* pBodyBuffer = new uint8_t[SizeBody * SizeBody * m_BytesPerPixel];
 	uint8_t* pOldBodyBuffer = new uint8_t[96 * 96 * m_BytesPerPixel];
 	CopyBuffer(pOldBodyBuffer, 0, 0, 96, 96, m_pImage, 96, 0, m_Width, m_Height, 96, 96, m_BytesPerPixel);
-	Upscale(pOldBodyBuffer, 96, 96, pBodyBuffer, 128, 128, m_BytesPerPixel);
-	CopyBuffer(m_pBodyBuffer, 128, 0, m_BodyWidth, m_BodyHeight, pBodyBuffer, 0, 0, 128, 128, 128, 128, m_BytesPerPixel);
+	Upscale(pOldBodyBuffer, 96, 96, pBodyBuffer, SizeBody, SizeBody, m_BytesPerPixel);
+	CopyBuffer(m_pBodyBuffer, 128 + BodyOffsetX, BodyOffsetY, m_BodyWidth, m_BodyHeight, pBodyBuffer, 0, BodyCutY, SizeBody, SizeBody, SizeBody, SizeBody - BodyCutY, m_BytesPerPixel);
 
 	m_MarkingWidth = 128;
 	m_MarkingHeight = 128;
@@ -199,55 +203,56 @@ void CConverter::ConvertReal() {
 	mem_zero(m_pMarkingBuffer, m_MarkingWidth * m_MarkingHeight * m_BytesPerPixel);
 	
 	CopyBuffer(pOldBodyBuffer, 0, 0, 96, 96, m_pImage, 0, 0, m_Width, m_Height, 96, 96, m_BytesPerPixel);
-	Upscale(pOldBodyBuffer, 96, 96, pBodyBuffer, 128, 128, m_BytesPerPixel);
-	CopyBuffer(m_pMarkingBuffer, 0, 0, m_MarkingWidth, m_MarkingHeight, pBodyBuffer, 0, 0, 128, 128, 128, 128, m_BytesPerPixel);
+	Upscale(pOldBodyBuffer, 96, 96, pBodyBuffer, SizeBody, SizeBody, m_BytesPerPixel);
+	CopyBuffer(m_pMarkingBuffer, 0 + BodyOffsetX, BodyOffsetY, m_MarkingWidth, m_MarkingHeight, pBodyBuffer, 0, BodyCutY, SizeBody, SizeBody, SizeBody, SizeBody - BodyCutY, m_BytesPerPixel);
 
 	m_EyesWidth = 128;
 	m_EyesHeight = 128;
 	m_pEyesBuffer = new uint8_t[m_EyesWidth * m_EyesHeight * m_BytesPerPixel];
 	mem_zero(m_pEyesBuffer, m_EyesWidth * m_EyesHeight * m_BytesPerPixel);
 
+	uint32_t EyeSize = 42;
 	pOldBodyBuffer = new uint8_t[32 * 32 * m_BytesPerPixel];
-	pBodyBuffer = new uint8_t[40 * 40 * m_BytesPerPixel];
+	pBodyBuffer = new uint8_t[EyeSize * EyeSize * m_BytesPerPixel];
 
 	uint32_t EyeOffsetX = 5;
 	uint32_t EyeOffsetX2 = 13;
 	uint32_t EyeOffsetY = 5;
 
 	CopyBuffer(pOldBodyBuffer, 0, 0, 32, 32, m_pImage, 32 * 2, 32 * 3, m_Width, m_Height, 32, 32, m_BytesPerPixel);
-	mem_zero(pBodyBuffer, 40 * 40 * m_BytesPerPixel);
-	Upscale(pOldBodyBuffer, 32, 32, pBodyBuffer, 40, 40, m_BytesPerPixel);
-	CopyBuffer(m_pEyesBuffer, EyeOffsetX, 0, m_EyesWidth, m_EyesHeight, pBodyBuffer, 0, EyeOffsetY, 40, 40 - EyeOffsetY, 40, 40 - EyeOffsetY, m_BytesPerPixel);
-	MirrorCopy(pBodyBuffer, 40, 40, m_BytesPerPixel);
-	CopyBuffer(m_pEyesBuffer, 32 - EyeOffsetX2, 0, m_EyesWidth, m_EyesHeight, pBodyBuffer, 0, EyeOffsetY, 40, 40 - EyeOffsetY, 40, 40 - EyeOffsetY, m_BytesPerPixel, true);
+	mem_zero(pBodyBuffer, EyeSize * EyeSize * m_BytesPerPixel);
+	Upscale(pOldBodyBuffer, 32, 32, pBodyBuffer, EyeSize, EyeSize, m_BytesPerPixel);
+	CopyBuffer(m_pEyesBuffer, EyeOffsetX, 0, m_EyesWidth, m_EyesHeight, pBodyBuffer, 0, EyeOffsetY, EyeSize, EyeSize - EyeOffsetY, EyeSize, EyeSize - EyeOffsetY, m_BytesPerPixel);
+	MirrorCopy(pBodyBuffer, EyeSize, EyeSize, m_BytesPerPixel);
+	CopyBuffer(m_pEyesBuffer, 32 - EyeOffsetX2, 0, m_EyesWidth, m_EyesHeight, pBodyBuffer, 0, EyeOffsetY, EyeSize, EyeSize - EyeOffsetY, EyeSize, EyeSize - EyeOffsetY, m_BytesPerPixel, true);
 
 	CopyBuffer(pOldBodyBuffer, 0, 0, 32, 32, m_pImage, 32 * 3, 32 * 3, m_Width, m_Height, 32, 32, m_BytesPerPixel);
-	mem_zero(pBodyBuffer, 40 * 40 * m_BytesPerPixel);
-	Upscale(pOldBodyBuffer, 32, 32, pBodyBuffer, 40, 40, m_BytesPerPixel);
-	CopyBuffer(m_pEyesBuffer, EyeOffsetX + 64 * 1, 0, m_EyesWidth, m_EyesHeight, pBodyBuffer, 0, EyeOffsetY, 40, 40 - EyeOffsetY, 40, 40 - EyeOffsetY, m_BytesPerPixel);
-	MirrorCopy(pBodyBuffer, 40, 40, m_BytesPerPixel);
-	CopyBuffer(m_pEyesBuffer, 32 - EyeOffsetX2 + 64 * 1, 0, m_EyesWidth, m_EyesHeight, pBodyBuffer, 0, EyeOffsetY, 40, 40 - EyeOffsetY, 40, 40 - EyeOffsetY, m_BytesPerPixel, true);
+	mem_zero(pBodyBuffer, EyeSize * EyeSize * m_BytesPerPixel);
+	Upscale(pOldBodyBuffer, 32, 32, pBodyBuffer, EyeSize, EyeSize, m_BytesPerPixel);
+	CopyBuffer(m_pEyesBuffer, EyeOffsetX + 64 * 1, 0, m_EyesWidth, m_EyesHeight, pBodyBuffer, 0, EyeOffsetY, EyeSize, EyeSize - EyeOffsetY, EyeSize, EyeSize - EyeOffsetY, m_BytesPerPixel);
+	MirrorCopy(pBodyBuffer, EyeSize, EyeSize, m_BytesPerPixel);
+	CopyBuffer(m_pEyesBuffer, 32 - EyeOffsetX2 + 64 * 1, 0, m_EyesWidth, m_EyesHeight, pBodyBuffer, 0, EyeOffsetY, EyeSize, EyeSize - EyeOffsetY, EyeSize, EyeSize - EyeOffsetY, m_BytesPerPixel, true);
 
 	CopyBuffer(pOldBodyBuffer, 0, 0, 32, 32, m_pImage, 32 * 4, 32 * 3, m_Width, m_Height, 32, 32, m_BytesPerPixel);
-	mem_zero(pBodyBuffer, 40 * 40 * m_BytesPerPixel);
-	Upscale(pOldBodyBuffer, 32, 32, pBodyBuffer, 40, 40, m_BytesPerPixel);
-	CopyBuffer(m_pEyesBuffer, EyeOffsetX + 64 * 0, 32 * 1, m_EyesWidth, m_EyesHeight, pBodyBuffer, 0, EyeOffsetY, 40, 40 - EyeOffsetY, 40, 40 - EyeOffsetY, m_BytesPerPixel);
-	MirrorCopy(pBodyBuffer, 40, 40, m_BytesPerPixel);
-	CopyBuffer(m_pEyesBuffer, 32 - EyeOffsetX2 + 64 * 0, 32 * 1, m_EyesWidth, m_EyesHeight, pBodyBuffer, 0, EyeOffsetY, 40, 40 - EyeOffsetY, 40, 40 - EyeOffsetY, m_BytesPerPixel, true);
+	mem_zero(pBodyBuffer, EyeSize * EyeSize * m_BytesPerPixel);
+	Upscale(pOldBodyBuffer, 32, 32, pBodyBuffer, EyeSize, EyeSize, m_BytesPerPixel);
+	CopyBuffer(m_pEyesBuffer, EyeOffsetX + 64 * 0, 32 * 1, m_EyesWidth, m_EyesHeight, pBodyBuffer, 0, EyeOffsetY, EyeSize, EyeSize - EyeOffsetY, EyeSize, EyeSize - EyeOffsetY, m_BytesPerPixel);
+	MirrorCopy(pBodyBuffer, EyeSize, EyeSize, m_BytesPerPixel);
+	CopyBuffer(m_pEyesBuffer, 32 - EyeOffsetX2 + 64 * 0, 32 * 1, m_EyesWidth, m_EyesHeight, pBodyBuffer, 0, EyeOffsetY, EyeSize, EyeSize - EyeOffsetY, EyeSize, EyeSize - EyeOffsetY, m_BytesPerPixel, true);
 
 	CopyBuffer(pOldBodyBuffer, 0, 0, 32, 32, m_pImage, 32 * 5, 32 * 3, m_Width, m_Height, 32, 32, m_BytesPerPixel);
-	mem_zero(pBodyBuffer, 40 * 40 * m_BytesPerPixel);
-	Upscale(pOldBodyBuffer, 32, 32, pBodyBuffer, 40, 40, m_BytesPerPixel);
-	CopyBuffer(m_pEyesBuffer, EyeOffsetX + 64 * 1, 32 * 1, m_EyesWidth, m_EyesHeight, pBodyBuffer, 0, EyeOffsetY, 40, 40 - EyeOffsetY, 40, 40 - EyeOffsetY, m_BytesPerPixel);
-	MirrorCopy(pBodyBuffer, 40, 40, m_BytesPerPixel);
-	CopyBuffer(m_pEyesBuffer, 32 - EyeOffsetX2 + 64 * 1, 32 * 1, m_EyesWidth, m_EyesHeight, pBodyBuffer, 0, EyeOffsetY, 40, 40 - EyeOffsetY, 40, 40 - EyeOffsetY, m_BytesPerPixel, true);
+	mem_zero(pBodyBuffer, EyeSize * EyeSize * m_BytesPerPixel);
+	Upscale(pOldBodyBuffer, 32, 32, pBodyBuffer, EyeSize, EyeSize, m_BytesPerPixel);
+	CopyBuffer(m_pEyesBuffer, EyeOffsetX + 64 * 1, 32 * 1, m_EyesWidth, m_EyesHeight, pBodyBuffer, 0, EyeOffsetY, EyeSize, EyeSize - EyeOffsetY, EyeSize, EyeSize - EyeOffsetY, m_BytesPerPixel);
+	MirrorCopy(pBodyBuffer, EyeSize, EyeSize, m_BytesPerPixel);
+	CopyBuffer(m_pEyesBuffer, 32 - EyeOffsetX2 + 64 * 1, 32 * 1, m_EyesWidth, m_EyesHeight, pBodyBuffer, 0, EyeOffsetY, EyeSize, EyeSize - EyeOffsetY, EyeSize, EyeSize - EyeOffsetY, m_BytesPerPixel, true);
 
 	CopyBuffer(pOldBodyBuffer, 0, 0, 32, 32, m_pImage, 32 * 7, 32 * 3, m_Width, m_Height, 32, 32, m_BytesPerPixel);
-	mem_zero(pBodyBuffer, 40 * 40 * m_BytesPerPixel);
-	Upscale(pOldBodyBuffer, 32, 32, pBodyBuffer, 40, 40, m_BytesPerPixel);
-	CopyBuffer(m_pEyesBuffer, EyeOffsetX + 64 * 0, 32 * 2, m_EyesWidth, m_EyesHeight, pBodyBuffer, 0, EyeOffsetY, 40, 40 - EyeOffsetY, 40, 40 - EyeOffsetY, m_BytesPerPixel);
-	MirrorCopy(pBodyBuffer, 40, 40, m_BytesPerPixel);
-	CopyBuffer(m_pEyesBuffer, 32 - EyeOffsetX2 + 64 * 0, 32 * 2, m_EyesWidth, m_EyesHeight, pBodyBuffer, 0, EyeOffsetY, 40, 40 - EyeOffsetY, 40, 40 - EyeOffsetY, m_BytesPerPixel, true);
+	mem_zero(pBodyBuffer, EyeSize * EyeSize * m_BytesPerPixel);
+	Upscale(pOldBodyBuffer, 32, 32, pBodyBuffer, EyeSize, EyeSize, m_BytesPerPixel);
+	CopyBuffer(m_pEyesBuffer, EyeOffsetX + 64 * 0, 32 * 2, m_EyesWidth, m_EyesHeight, pBodyBuffer, 0, EyeOffsetY, EyeSize, EyeSize - EyeOffsetY, EyeSize, EyeSize - EyeOffsetY, m_BytesPerPixel);
+	MirrorCopy(pBodyBuffer, EyeSize, EyeSize, m_BytesPerPixel);
+	CopyBuffer(m_pEyesBuffer, 32 - EyeOffsetX2 + 64 * 0, 32 * 2, m_EyesWidth, m_EyesHeight, pBodyBuffer, 0, EyeOffsetY, EyeSize, EyeSize - EyeOffsetY, EyeSize, EyeSize - EyeOffsetY, m_BytesPerPixel, true);
 
 	m_FeetWidth = 128;
 	m_FeetHeight = 64;
