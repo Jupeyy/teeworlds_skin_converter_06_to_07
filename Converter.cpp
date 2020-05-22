@@ -189,8 +189,8 @@ void CConverter::ConvertReal() {
 	
 	uint32_t SizeBody = 128 - 2;
 	uint32_t BodyOffsetX = 1;
-	uint32_t BodyOffsetY = 2;
-	uint32_t BodyCutY = 4;
+	uint32_t BodyOffsetY = 0;
+	uint32_t BodyCutY = 2;
 	uint8_t* pBodyBuffer = new uint8_t[SizeBody * SizeBody * m_BytesPerPixel];
 	uint8_t* pOldBodyBuffer = new uint8_t[96 * 96 * m_BytesPerPixel];
 	CopyBuffer(pOldBodyBuffer, 0, 0, 96, 96, m_pImage, 96, 0, m_Width, m_Height, 96, 96, m_BytesPerPixel);
